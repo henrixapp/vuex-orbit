@@ -1,0 +1,38 @@
+{
+  "name": "vuex-orbit",
+  "version": "0.0.1",
+  "description": "A store for vuex and orbit",
+  "main": "dist/commonjs/es5/index.js",
+  "module": "dist/modules/es5/index.js",
+  "types": "dist/types/index.d.ts",
+  "scripts": {
+    "build": "rm -rf dist && BROCCOLI_ENV=dist broccoli build dist",
+    "build:tests": "rm -rf tests && BROCCOLI_ENV=tests broccoli build tests",
+    "prepublish": "npm run build",
+    "test": "testem ci"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/henrixapp/vuex-orbit.git"
+  },
+  "keywords": [
+    "vuex"
+  ],
+  "author": "Henrik Reinstädtler <henrik@mathphys.stura.uni-heidelberg.de>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/henrixapp/vuex-orbit/issues"
+  },
+  "homepage": "https://github.com/henrixapp/vuex-orbit#readme",
+  "dependencies": {
+    "@orbit/store": "^0.15.14",
+    "vue": "^2.5.16",
+    "vuex": "^3.0.1",
+    "vuex-map-fields": "^1.2.3"
+  },
+  "devDependencies": {
+    "@glimmer/build": "^0.8.5",
+    "sinon": "^1.17.7",
+    "whatwg-fetch": "^2.0.3"
+  }
+}
