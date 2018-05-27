@@ -29,12 +29,29 @@ export default class VuexStore extends Store {
                         commit('set', { data, model: this._schema.pluralize(model) });
                     });
                 },
+                fetchAllRelatedOf: ({ commit }, query) => {
+                    this.query(q => q.findRelatedRecords(query.data, query.relationship)).then(data => {
+                        commit('set', { data, model: query.relationship });
+                    });
+                },
+                fetchRelatedOf: ({ commit }, query) => {
+                    this.query(q => q.findRelatedRecord(query.data, query.relationship)).then(data => {
+                        commit('set', { data, model: query.relationship });
+                    });
+                },
                 fetchOne: ({ commit }, { model, id }) => {
                     this.query(q => q.findRecord({ type: model, id })).then(data => commit('set', { data, model: this._schema.singularize(model) }));
                 },
                 update: ({ commit }, data) => {
                     this.update(t => t.replaceRecord(data)).then(() => commit('set', { data, model: data.type }));
+                },
+                delete: ({ commit, dispatch }, data) => {
+                    this.update(t => t.removeRecord(data)).then(() => {
+                        //update
+                        dispatch("fetchAllOf", data.type);
+                    });
                 }
+                //TODO: RelatedRecords update and delete
             };
             this.mutations = {
                 set: (state, { data, model }) => {
