@@ -43,11 +43,23 @@ var VuexStore = function (_Store) {
             };
             _this.actions = {
                 //TODO: Add fetch settings like json api
+                create: function (_ref, record) {
+                    var commit = _ref.commit,
+                        dispatch = _ref.dispatch;
+
+                    _this.update(function (t) {
+                        return t.addRecord(record);
+                    }).then(function (data) {
+                        dispatch("fetchAllOf", record.type);
+                        commit("set", { data: data, model: _this._schema.singularize(data.type) });
+                        //TODO: relationships
+                    });
+                },
                 /**
                  * @argument model: The model as singularized name
                  */
-                fetchAllOf: function (_ref, model) {
-                    var commit = _ref.commit;
+                fetchAllOf: function (_ref2, model) {
+                    var commit = _ref2.commit;
 
                     _this.query(function (q) {
                         return q.findRecords(model);
@@ -55,8 +67,8 @@ var VuexStore = function (_Store) {
                         commit('set', { data: data, model: _this._schema.pluralize(model) });
                     });
                 },
-                fetchAllRelatedOf: function (_ref2, query) {
-                    var commit = _ref2.commit;
+                fetchAllRelatedOf: function (_ref3, query) {
+                    var commit = _ref3.commit;
 
                     _this.query(function (q) {
                         return q.findRelatedRecords(query.data, query.relationship);
@@ -64,8 +76,8 @@ var VuexStore = function (_Store) {
                         commit('set', { data: data, model: query.relationship });
                     });
                 },
-                fetchRelatedOf: function (_ref3, query) {
-                    var commit = _ref3.commit;
+                fetchRelatedOf: function (_ref4, query) {
+                    var commit = _ref4.commit;
 
                     _this.query(function (q) {
                         return q.findRelatedRecord(query.data, query.relationship);
@@ -73,10 +85,10 @@ var VuexStore = function (_Store) {
                         commit('set', { data: data, model: query.relationship });
                     });
                 },
-                fetchOne: function (_ref4, _ref5) {
-                    var commit = _ref4.commit;
-                    var model = _ref5.model,
-                        id = _ref5.id;
+                fetchOne: function (_ref5, _ref6) {
+                    var commit = _ref5.commit;
+                    var model = _ref6.model,
+                        id = _ref6.id;
 
                     _this.query(function (q) {
                         return q.findRecord({ type: model, id: id });
@@ -84,8 +96,8 @@ var VuexStore = function (_Store) {
                         return commit('set', { data: data, model: _this._schema.singularize(model) });
                     });
                 },
-                update: function (_ref6, data) {
-                    var commit = _ref6.commit;
+                update: function (_ref7, data) {
+                    var commit = _ref7.commit;
 
                     _this.update(function (t) {
                         return t.replaceRecord(data);
@@ -93,9 +105,9 @@ var VuexStore = function (_Store) {
                         return commit('set', { data: data, model: data.type });
                     });
                 },
-                delete: function (_ref7, data) {
-                    var commit = _ref7.commit,
-                        dispatch = _ref7.dispatch;
+                delete: function (_ref8, data) {
+                    var commit = _ref8.commit,
+                        dispatch = _ref8.dispatch;
 
                     _this.update(function (t) {
                         return t.removeRecord(data);
@@ -107,9 +119,9 @@ var VuexStore = function (_Store) {
                 //TODO: RelatedRecords update and delete
             };
             _this.mutations = {
-                set: function (state, _ref8) {
-                    var data = _ref8.data,
-                        model = _ref8.model;
+                set: function (state, _ref9) {
+                    var data = _ref9.data,
+                        model = _ref9.model;
 
                     state[model] = data;
                     if (model.lastIndexOf('s') !== model.length - 1) {
@@ -122,9 +134,9 @@ var VuexStore = function (_Store) {
                         });
                     }
                 },
-                updateField: function (state, _ref9) {
-                    var path = _ref9.path,
-                        value = _ref9.value;
+                updateField: function (state, _ref10) {
+                    var path = _ref10.path,
+                        value = _ref10.value;
 
                     //set in field
                     path.split(/[.[\]]+/).reduce(function (prev, key, index, array) {

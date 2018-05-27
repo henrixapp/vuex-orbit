@@ -21,6 +21,13 @@ export default class VuexStore extends Store {
             };
             this.actions = {
                 //TODO: Add fetch settings like json api
+                create: ({ commit, dispatch }, record) => {
+                    this.update(t => t.addRecord(record)).then(data => {
+                        dispatch("fetchAllOf", record.type);
+                        commit("set", { data, model: this._schema.singularize(data.type) });
+                        //TODO: relationships
+                    });
+                },
                 /**
                  * @argument model: The model as singularized name
                  */
