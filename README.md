@@ -1,4 +1,4 @@
-# @orbit/jsonapi
+# vuex-orbit
 
 Vuex store for orbit.js, based on vuex-map-fields
 
