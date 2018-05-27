@@ -1,6 +1,6 @@
 import Store, { StoreSettings } from '@orbit/store';
 import { Module, GetterTree, ActionTree, MutationTree, ModuleTree } from 'vuex';
-import { Schema, TransformBuilder, RecordIdentity, QueryOrExpression, TransformOrOperations } from '@orbit/data';
+import { Schema, TransformBuilder, RecordIdentity, QueryOrExpression, TransformOrOperations, QueryBuilderFunc } from '@orbit/data';
 import { getField, updateField } from 'vuex-map-fields';
 import { Record } from '@orbit/data';
 export default class VuexStore<S, R> extends Store implements Module<S, R> {
@@ -58,11 +58,11 @@ export default class VuexStore<S, R> extends Store implements Module<S, R> {
                 fetchOne: ({ commit }, { model, id }) => {
                     this.query(q => q.findRecord({ type: model, id })).then((data) => commit('set', { data, model: this._schema.singularize(model) }))
                 },
-                update: ({ commit }, data: Record) => {
+                /*update: ({ commit }, data: Record) => {
                     this.update((t) => t.replaceRecord(data)).then(() =>
                         commit('set', { data, model: data.type })
                     )
-                },
+                },*/
                 delete: ({ commit, dispatch }, data: Record) => {
                     this.update((t) => t.removeRecord(data)).then(() => {
                         //update
@@ -74,8 +74,9 @@ export default class VuexStore<S, R> extends Store implements Module<S, R> {
                         options.thenable(store,data);
                     })
                 },
-                querying: (store, options:{queryOrExpression: QueryOrExpression,thenable:Function}) => {
-                    this.query(options.queryOrExpression).then((data) => {
+                querying: (store, options:{queryOrExpression: QueryBuilderFunc,thenable:Function}) => {
+                    this.query(q=>{
+                        return options.queryOrExpression(q)}).then((data) => {
                         options.thenable(store,data);
                     })
                 }

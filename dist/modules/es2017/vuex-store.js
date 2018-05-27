@@ -49,9 +49,11 @@ export default class VuexStore extends Store {
                 fetchOne: ({ commit }, { model, id }) => {
                     this.query(q => q.findRecord({ type: model, id })).then(data => commit('set', { data, model: this._schema.singularize(model) }));
                 },
-                update: ({ commit }, data) => {
-                    this.update(t => t.replaceRecord(data)).then(() => commit('set', { data, model: data.type }));
-                },
+                /*update: ({ commit }, data: Record) => {
+                    this.update((t) => t.replaceRecord(data)).then(() =>
+                        commit('set', { data, model: data.type })
+                    )
+                },*/
                 delete: ({ commit, dispatch }, data) => {
                     this.update(t => t.removeRecord(data)).then(() => {
                         //update
@@ -64,7 +66,9 @@ export default class VuexStore extends Store {
                     });
                 },
                 querying: (store, options) => {
-                    this.query(options.queryOrExpression).then(data => {
+                    this.query(q => {
+                        return options.queryOrExpression(q);
+                    }).then(data => {
                         options.thenable(store, data);
                     });
                 }

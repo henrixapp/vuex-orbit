@@ -96,18 +96,14 @@ var VuexStore = function (_Store) {
                         return commit('set', { data: data, model: _this._schema.singularize(model) });
                     });
                 },
-                update: function (_ref7, data) {
-                    var commit = _ref7.commit;
-
-                    _this.update(function (t) {
-                        return t.replaceRecord(data);
-                    }).then(function () {
-                        return commit('set', { data: data, model: data.type });
-                    });
-                },
-                delete: function (_ref8, data) {
-                    var commit = _ref8.commit,
-                        dispatch = _ref8.dispatch;
+                /*update: ({ commit }, data: Record) => {
+                    this.update((t) => t.replaceRecord(data)).then(() =>
+                        commit('set', { data, model: data.type })
+                    )
+                },*/
+                delete: function (_ref7, data) {
+                    var commit = _ref7.commit,
+                        dispatch = _ref7.dispatch;
 
                     _this.update(function (t) {
                         return t.removeRecord(data);
@@ -122,16 +118,18 @@ var VuexStore = function (_Store) {
                     });
                 },
                 querying: function (store, options) {
-                    _this.query(options.queryOrExpression).then(function (data) {
+                    _this.query(function (q) {
+                        return options.queryOrExpression(q);
+                    }).then(function (data) {
                         options.thenable(store, data);
                     });
                 }
                 //TODO: RelatedRecords update and delete
             };
             _this.mutations = {
-                set: function (state, _ref9) {
-                    var data = _ref9.data,
-                        model = _ref9.model;
+                set: function (state, _ref8) {
+                    var data = _ref8.data,
+                        model = _ref8.model;
 
                     state[model] = data;
                     if (model.lastIndexOf('s') !== model.length - 1) {
@@ -144,9 +142,9 @@ var VuexStore = function (_Store) {
                         });
                     }
                 },
-                updateField: function (state, _ref10) {
-                    var path = _ref10.path,
-                        value = _ref10.value;
+                updateField: function (state, _ref9) {
+                    var path = _ref9.path,
+                        value = _ref9.value;
 
                     //set in field
                     path.split(/[.[\]]+/).reduce(function (prev, key, index, array) {
