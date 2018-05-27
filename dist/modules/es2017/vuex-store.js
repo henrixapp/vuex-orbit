@@ -24,8 +24,8 @@ export default class VuexStore extends Store {
                 create: ({ commit, dispatch }, record) => {
                     this.update(t => t.addRecord(record)).then(data => {
                         dispatch("fetchAllOf", record.type);
-                        commit("set", { data, model: this._schema.singularize(data.type) });
-                        //TODO: relationships
+                        commit("set", { record, model: this._schema.singularize(record.type) });
+                        //TODO: relationships 
                     });
                 },
                 /**

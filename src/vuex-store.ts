@@ -32,9 +32,9 @@ export default class VuexStore<S, R> extends Store implements Module<S, R> {
                 //TODO: Add fetch settings like json api
                 create: ({ commit, dispatch }, record: Record) => {
                     this.update((t) => t.addRecord(record)).then((data) => {
-                        dispatch("fetchAllOf", record.type); 
-                        commit("set",{data,model:this._schema.singularize(data.type)});
-                        //TODO: relationships
+                        dispatch("fetchAllOf", record.type);
+                        commit("set", { record, model: this._schema.singularize(record.type) });
+                        //TODO: relationships 
                     });
                 },
                 /**

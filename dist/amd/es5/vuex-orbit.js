@@ -51,8 +51,8 @@ var VuexStore = function (_Store) {
                         return t.addRecord(record);
                     }).then(function (data) {
                         dispatch("fetchAllOf", record.type);
-                        commit("set", { data: data, model: _this._schema.singularize(data.type) });
-                        //TODO: relationships
+                        commit("set", { record: record, model: _this._schema.singularize(record.type) });
+                        //TODO: relationships 
                     });
                 },
                 /**
