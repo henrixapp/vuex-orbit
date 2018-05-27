@@ -28,7 +28,7 @@ var VuexStore = function (_Store) {
                 var model = settings.schema.getModel(type);
                 _this.state = _this.state || {};
                 //add to state
-                _this.state[_this._schema.singularize(type)] = model;
+                _this.state[_this._schema.singularize(type)] = null;
                 _this.state[_this._schema.pluralize(type)] = [];
             });
             //map fields

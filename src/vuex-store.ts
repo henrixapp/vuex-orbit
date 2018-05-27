@@ -19,7 +19,7 @@ export default class VuexStore<S, R> extends Store implements Module<S, R> {
                 let model = settings.schema.getModel(type);
                 this.state = this.state || {} as S;
                 //add to state
-                this.state[this._schema.singularize(type)] = model;
+                this.state[this._schema.singularize(type)] = null;
                 this.state[this._schema.pluralize(type)] = [];
             });
             //map fields
