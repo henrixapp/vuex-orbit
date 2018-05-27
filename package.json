@@ -1,6 +1,6 @@
 {
   "name": "vuex-orbit",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "A store for vuex and orbit",
   "main": "dist/commonjs/es5/index.js",
   "module": "dist/modules/es5/index.js",
@@ -8,7 +8,7 @@
   "scripts": {
     "build": "rm -rf dist && BROCCOLI_ENV=dist broccoli build dist",
     "build:tests": "rm -rf tests && BROCCOLI_ENV=tests broccoli build tests",
-    "prepublish": "npm run build",
+    "prepare": "npm run build",
     "test": "testem ci"
   },
   "repository": {

@@ -23,8 +23,10 @@ var VuexStore = function (_Store) {
         _this.namespaced = false;
         if (settings.schema) {
             //generate vuex store
+            _this.state = _this.state || {};
             Object.keys(_this._schema.models).forEach(function (type) {
                 var model = settings.schema.getModel(type);
+                _this.state = _this.state || {};
                 //add to state
                 _this.state[_this._schema.singularize(type)] = model;
                 _this.state[_this._schema.pluralize(type)] = [];

@@ -1,6 +1,6 @@
 import Store, { StoreSettings } from '@orbit/store';
 import { Module, GetterTree, ActionTree, MutationTree, ModuleTree } from 'vuex';
-import { Schema, TransformBuilder } from '@orbit/data';
+import { Schema, TransformBuilder, RecordIdentity } from '@orbit/data';
 import { getField, updateField } from 'vuex-map-fields';
 import {Record} from '@orbit/data';
 export default class VuexStore<S, R> extends Store implements Module<S, R> {
@@ -14,8 +14,10 @@ export default class VuexStore<S, R> extends Store implements Module<S, R> {
         super(settings)
         if (settings.schema) {
             //generate vuex store
+            this.state = this.state ||{} as S;
             Object.keys(this._schema.models).forEach(type => {
                 let model = settings.schema.getModel(type);
+                this.state = this.state ||{} as S;
                 //add to state
                 this.state[this._schema.singularize(type)] = model;
                 this.state[this._schema.pluralize(type)] = [];
@@ -36,6 +38,16 @@ export default class VuexStore<S, R> extends Store implements Module<S, R> {
                         commit('set', { data, model:this._schema.pluralize(model) })
                     })
                 },
+                fetchAllRelatedOf:({commit},query:{data:RecordIdentity,relationship:string}) =>{
+                    this.query(q=>q.findRelatedRecords(query.data,query.relationship)).then((data)=>{
+                        commit('set',{data,model:query.relationship})
+                    })
+                },
+                fetchRelatedOf:({commit},query:{data:RecordIdentity,relationship:string}) =>{
+                    this.query(q=>q.findRelatedRecord(query.data,query.relationship)).then((data)=>{
+                        commit('set',{data,model:query.relationship})
+                    })
+                },
                 fetchOne:({commit},{model,id})=>{
                     this.query(q=> q.findRecord({type:model,id})).then((data)=>commit('set',{data,model:this._schema.singularize(model)}))
                 },
@@ -43,7 +55,14 @@ export default class VuexStore<S, R> extends Store implements Module<S, R> {
                     this.update((t)=>t.replaceRecord(data)).then(()=>
                         commit('set',{data,model:data.type})
                     )
+                },
+                delete:({commit, dispatch},data:Record) =>{
+                    this.update((t)=>t.removeRecord(data)).then(()=>{
+                        //update
+                        dispatch("fetchAllOf",data.type);
+                    })
                 }
+                //TODO: RelatedRecords update and delete
             }
             this.mutations = {
                 set:(state, { data, model })=> {

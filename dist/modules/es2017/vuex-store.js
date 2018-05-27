@@ -5,8 +5,10 @@ export default class VuexStore extends Store {
         this.namespaced = false;
         if (settings.schema) {
             //generate vuex store
+            this.state = this.state || {};
             Object.keys(this._schema.models).forEach(type => {
                 let model = settings.schema.getModel(type);
+                this.state = this.state || {};
                 //add to state
                 this.state[this._schema.singularize(type)] = model;
                 this.state[this._schema.pluralize(type)] = [];
