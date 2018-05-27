@@ -24,7 +24,7 @@ export default class VuexStore extends Store {
                 create: ({ commit, dispatch }, record) => {
                     this.update(t => t.addRecord(record)).then(data => {
                         dispatch("fetchAllOf", record.type);
-                        commit("set", { record, model: this._schema.singularize(record.type) });
+                        commit("set", { data: record, model: this._schema.singularize(record.type) });
                         //TODO: relationships 
                     });
                 },
@@ -56,6 +56,16 @@ export default class VuexStore extends Store {
                     this.update(t => t.removeRecord(data)).then(() => {
                         //update
                         dispatch("fetchAllOf", data.type);
+                    });
+                },
+                updating: (store, options) => {
+                    this.update(options.transformOrOperations).then(data => {
+                        options.thenable(store, data);
+                    });
+                },
+                querying: (store, options) => {
+                    this.query(options.queryOrExpression).then(data => {
+                        options.thenable(store, data);
                     });
                 }
                 //TODO: RelatedRecords update and delete

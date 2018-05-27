@@ -51,7 +51,7 @@ var VuexStore = function (_Store) {
                         return t.addRecord(record);
                     }).then(function (data) {
                         dispatch("fetchAllOf", record.type);
-                        commit("set", { record: record, model: _this._schema.singularize(record.type) });
+                        commit("set", { data: record, model: _this._schema.singularize(record.type) });
                         //TODO: relationships 
                     });
                 },
@@ -114,6 +114,16 @@ var VuexStore = function (_Store) {
                     }).then(function () {
                         //update
                         dispatch("fetchAllOf", data.type);
+                    });
+                },
+                updating: function (store, options) {
+                    _this.update(options.transformOrOperations).then(function (data) {
+                        options.thenable(store, data);
+                    });
+                },
+                querying: function (store, options) {
+                    _this.query(options.queryOrExpression).then(function (data) {
+                        options.thenable(store, data);
                     });
                 }
                 //TODO: RelatedRecords update and delete

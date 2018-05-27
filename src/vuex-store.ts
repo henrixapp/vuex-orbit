@@ -1,6 +1,6 @@
 import Store, { StoreSettings } from '@orbit/store';
 import { Module, GetterTree, ActionTree, MutationTree, ModuleTree } from 'vuex';
-import { Schema, TransformBuilder, RecordIdentity } from '@orbit/data';
+import { Schema, TransformBuilder, RecordIdentity, QueryOrExpression, TransformOrOperations } from '@orbit/data';
 import { getField, updateField } from 'vuex-map-fields';
 import { Record } from '@orbit/data';
 export default class VuexStore<S, R> extends Store implements Module<S, R> {
@@ -33,7 +33,7 @@ export default class VuexStore<S, R> extends Store implements Module<S, R> {
                 create: ({ commit, dispatch }, record: Record) => {
                     this.update((t) => t.addRecord(record)).then((data) => {
                         dispatch("fetchAllOf", record.type);
-                        commit("set", { record, model: this._schema.singularize(record.type) });
+                        commit("set", { data: record, model: this._schema.singularize(record.type) });
                         //TODO: relationships 
                     });
                 },
@@ -67,6 +67,16 @@ export default class VuexStore<S, R> extends Store implements Module<S, R> {
                     this.update((t) => t.removeRecord(data)).then(() => {
                         //update
                         dispatch("fetchAllOf", data.type);
+                    })
+                },
+                updating:(store,options:{transformOrOperations:TransformOrOperations,thenable:Function})=>{
+                    this.update(options.transformOrOperations).then((data)=>{
+                        options.thenable(store,data);
+                    })
+                },
+                querying: (store, options:{queryOrExpression: QueryOrExpression,thenable:Function}) => {
+                    this.query(options.queryOrExpression).then((data) => {
+                        options.thenable(store,data);
                     })
                 }
                 //TODO: RelatedRecords update and delete
