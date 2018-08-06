@@ -58,11 +58,11 @@ export default class VuexStore<S, R> extends Store implements Module<S, R> {
                 fetchOne: ({ commit }, { model, id }) => {
                     this.query(q => q.findRecord({ type: model, id })).then((data) => commit('set', { data, model: this._schema.singularize(model) }))
                 },
-                /*update: ({ commit }, data: Record) => {
+                update: ({ commit }, data: Record) => {
                     this.update((t) => t.replaceRecord(data)).then(() =>
                         commit('set', { data, model: data.type })
                     )
-                },*/
+                },
                 delete: ({ commit, dispatch }, data: Record) => {
                     this.update((t) => t.removeRecord(data)).then(() => {
                         //update
@@ -93,6 +93,10 @@ export default class VuexStore<S, R> extends Store implements Module<S, R> {
                                 item.keys = data.keys;
                             }
                         })
+                    } else {
+                        state[model] = [];
+                        state[model] = data;
+                        state[model].splice(data.length)
                     }
                 },
                 updateField: (state, { path, value }) => {

@@ -1,6 +1,6 @@
 {
   "name": "vuex-orbit",
-  "version": "0.0.6h",
+  "version": "0.0.6k",
   "description": "A store for vuex and orbit",
   "main": "dist/commonjs/es5/index.js",
   "module": "dist/modules/es5/index.js",
@@ -16,7 +16,8 @@
     "url": "git+https://github.com/henrixapp/vuex-orbit.git"
   },
   "keywords": [
-    "vuex", "orbit-js"
+    "vuex",
+    "orbit-js"
   ],
   "author": "Henrik Reinstädtler <henrik@mathphys.stura.uni-heidelberg.de>",
   "license": "MIT",
@@ -25,7 +26,7 @@
   },
   "homepage": "https://github.com/henrixapp/vuex-orbit#readme",
   "dependencies": {
-    "@orbit/store": "^0.15.14",
+    "@orbit/store": "^0.15.18",
     "vue": "^2.5.16",
     "vuex": "^3.0.1",
     "vuex-map-fields": "^1.2.3"
