@@ -46,35 +46,35 @@
     tslint "^5.9.1"
     typescript "~2.6.1"
 
-"@orbit/core@^0.15.14":
-  version "0.15.14"
-  resolved "https://registry.yarnpkg.com/@orbit/core/-/core-0.15.14.tgz#a43bfb660e59d682b4d41fb8c70c81e1748a72b6"
+"@orbit/core@^0.15.18":
+  version "0.15.18"
+  resolved "https://registry.yarnpkg.com/@orbit/core/-/core-0.15.18.tgz#7f09cfd90841f1221f130ecbf0b4374f5faa23ee"
   dependencies:
-    "@orbit/utils" "^0.15.14"
+    "@orbit/utils" "^0.15.18"
 
-"@orbit/data@^0.15.14":
-  version "0.15.14"
-  resolved "https://registry.yarnpkg.com/@orbit/data/-/data-0.15.14.tgz#5c269de32e9500c5f25f55b1345775110c59c97b"
+"@orbit/data@^0.15.18":
+  version "0.15.18"
+  resolved "https://registry.yarnpkg.com/@orbit/data/-/data-0.15.18.tgz#f0c4e60635fb1c15c441020dc64269d7f6506dbb"
   dependencies:
-    "@orbit/core" "^0.15.14"
-    "@orbit/utils" "^0.15.14"
+    "@orbit/core" "^0.15.18"
+    "@orbit/utils" "^0.15.18"
 
 "@orbit/immutable@^0.15.14":
   version "0.15.14"
   resolved "https://registry.yarnpkg.com/@orbit/immutable/-/immutable-0.15.14.tgz#8c6958841d45f7f947282d8f39d88094d20bd152"
 
-"@orbit/store@^0.15.14":
-  version "0.15.14"
-  resolved "https://registry.yarnpkg.com/@orbit/store/-/store-0.15.14.tgz#f1ec7c32b7c331e86919649edb70631321125f9e"
+"@orbit/store@^0.15.18":
+  version "0.15.18"
+  resolved "https://registry.yarnpkg.com/@orbit/store/-/store-0.15.18.tgz#e84b839529b5cab3d3de57166fc4441ccb12c45d"
   dependencies:
-    "@orbit/core" "^0.15.14"
-    "@orbit/data" "^0.15.14"
+    "@orbit/core" "^0.15.18"
+    "@orbit/data" "^0.15.18"
     "@orbit/immutable" "^0.15.14"
-    "@orbit/utils" "^0.15.14"
+    "@orbit/utils" "^0.15.18"
 
-"@orbit/utils@^0.15.14":
-  version "0.15.14"
-  resolved "https://registry.yarnpkg.com/@orbit/utils/-/utils-0.15.14.tgz#9b9509d4a80244db588ad88df0664c69474cc73b"
+"@orbit/utils@^0.15.18":
+  version "0.15.18"
+  resolved "https://registry.yarnpkg.com/@orbit/utils/-/utils-0.15.18.tgz#43632a1eb602839382f549adcd61a3305031e5fb"
 
 "@types/qunit@^1.16.30":
   version "1.16.31"
