@@ -25,7 +25,13 @@ export default class VuexStore<S, R> extends Store implements Module<S, R> {
             //map fields
             this.getters = {
                 getField: (state) => {
-                    return path => path.split(/[.[\]]+/).reduce((prev, key) => prev[key], state);
+                    return path => path.split(/[.[\]]+/).reduce((prev, key) =>{
+                        if(prev!=null) {
+                            return prev[key]
+                        } else {
+                            return null;
+                        }
+                    }, state);
                 }
             };
             this.actions = {
