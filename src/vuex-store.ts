@@ -38,7 +38,7 @@ export default class VuexStore<S, R> extends Store implements Module<S, R> {
                 //TODO: Add fetch settings like json api
                 create: ({ commit, dispatch }, record: Record) => {
                     this.update((t) => t.addRecord(record)).then((data) => {
-                        dispatch("fetchAllOf", record.type);
+                       // dispatch("fetchAllOf", record.type);
                         commit("set", { data: record, model: this._schema.singularize(record.type) });
                         //TODO: relationships 
                     });
@@ -89,16 +89,30 @@ export default class VuexStore<S, R> extends Store implements Module<S, R> {
                 //TODO: RelatedRecords update and delete
             }
             this.mutations = {
+                remove: (state,{ data, model}) => {
+                    if (model.lastIndexOf('s') !== model.length - 1) {
+                        let index= state[model+'s'].findIndex((record:Record) => record.id ==data.id)
+                        state[model+'s'].splice(index,1)
+                    } else {
+                        let index= state[model+'s'].findIndex((record:Record) => record.id ==data.id)
+                        state[model+'s'].splice(index,1)
+                    }
+                },
                 set: (state, { data, model }) => {
                     state[model] = data;
                     if (model.lastIndexOf('s') !== model.length - 1) {
+                        let setted = false
                         state[this.schema.pluralize(model)].forEach((item: Record) => {
                             if (item.id === data.id) {
                                 item.attributes = data.attributes;
                                 item.relationships = data.relationships;
                                 item.keys = data.keys;
+                                setted = true
                             }
                         })
+                        if(!setted){
+                            state[this.schema.pluralize(model)].push(data)
+                        }
                     } else {
                         state[model] = [];
                         state[model] = data;

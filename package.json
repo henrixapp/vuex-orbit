@@ -1,6 +1,6 @@
 {
   "name": "vuex-orbit",
-  "version": "0.0.6l",
+  "version": "0.0.6o",
   "description": "A store for vuex and orbit",
   "main": "dist/commonjs/es5/index.js",
   "module": "dist/modules/es5/index.js",
