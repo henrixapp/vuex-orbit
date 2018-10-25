@@ -1,6 +1,6 @@
 {
   "name": "vuex-orbit",
-  "version": "0.0.6o",
+  "version": "0.0.7",
   "description": "A store for vuex and orbit",
   "main": "dist/commonjs/es5/index.js",
   "module": "dist/modules/es5/index.js",
@@ -26,10 +26,10 @@
   },
   "homepage": "https://github.com/henrixapp/vuex-orbit#readme",
   "dependencies": {
-    "@orbit/store": "^0.15.18",
-    "vue": "^2.5.16",
+    "@orbit/store": "^0.15.23",
+    "vue": "^2.5.17",
     "vuex": "^3.0.1",
-    "vuex-map-fields": "^1.2.3"
+    "vuex-map-fields": "^1.3.1"
   },
   "devDependencies": {
     "@glimmer/build": "^0.8.5",

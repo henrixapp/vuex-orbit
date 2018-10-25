@@ -16,14 +16,20 @@ export default class VuexStore extends Store {
             //map fields
             this.getters = {
                 getField: state => {
-                    return path => path.split(/[.[\]]+/).reduce((prev, key) => prev[key], state);
+                    return path => path.split(/[.[\]]+/).reduce((prev, key) => {
+                        if (prev != null) {
+                            return prev[key];
+                        } else {
+                            return null;
+                        }
+                    }, state);
                 }
             };
             this.actions = {
                 //TODO: Add fetch settings like json api
                 create: ({ commit, dispatch }, record) => {
                     this.update(t => t.addRecord(record)).then(data => {
-                        dispatch("fetchAllOf", record.type);
+                        // dispatch("fetchAllOf", record.type);
                         commit("set", { data: record, model: this._schema.singularize(record.type) });
                         //TODO: relationships 
                     });
@@ -49,11 +55,9 @@ export default class VuexStore extends Store {
                 fetchOne: ({ commit }, { model, id }) => {
                     this.query(q => q.findRecord({ type: model, id })).then(data => commit('set', { data, model: this._schema.singularize(model) }));
                 },
-                /*update: ({ commit }, data: Record) => {
-                    this.update((t) => t.replaceRecord(data)).then(() =>
-                        commit('set', { data, model: data.type })
-                    )
-                },*/
+                update: ({ commit }, data) => {
+                    this.update(t => t.replaceRecord(data)).then(() => commit('set', { data, model: data.type }));
+                },
                 delete: ({ commit, dispatch }, data) => {
                     this.update(t => t.removeRecord(data)).then(() => {
                         //update
@@ -75,16 +79,34 @@ export default class VuexStore extends Store {
                 //TODO: RelatedRecords update and delete
             };
             this.mutations = {
+                remove: (state, { data, model }) => {
+                    if (model.lastIndexOf('s') !== model.length - 1) {
+                        let index = state[model + 's'].findIndex(record => record.id == data.id);
+                        state[model + 's'].splice(index, 1);
+                    } else {
+                        let index = state[model + 's'].findIndex(record => record.id == data.id);
+                        state[model + 's'].splice(index, 1);
+                    }
+                },
                 set: (state, { data, model }) => {
                     state[model] = data;
                     if (model.lastIndexOf('s') !== model.length - 1) {
+                        let setted = false;
                         state[this.schema.pluralize(model)].forEach(item => {
                             if (item.id === data.id) {
                                 item.attributes = data.attributes;
                                 item.relationships = data.relationships;
                                 item.keys = data.keys;
+                                setted = true;
                             }
                         });
+                        if (!setted) {
+                            state[this.schema.pluralize(model)].push(data);
+                        }
+                    } else {
+                        state[model] = [];
+                        state[model] = data;
+                        state[model].splice(data.length);
                     }
                 },
                 updateField: (state, { path, value }) => {

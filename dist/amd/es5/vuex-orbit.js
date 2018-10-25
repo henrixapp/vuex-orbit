@@ -36,7 +36,11 @@ var VuexStore = function (_Store) {
                 getField: function (state) {
                     return function (path) {
                         return path.split(/[.[\]]+/).reduce(function (prev, key) {
-                            return prev[key];
+                            if (prev != null) {
+                                return prev[key];
+                            } else {
+                                return null;
+                            }
                         }, state);
                     };
                 }
@@ -50,7 +54,7 @@ var VuexStore = function (_Store) {
                     _this.update(function (t) {
                         return t.addRecord(record);
                     }).then(function (data) {
-                        dispatch("fetchAllOf", record.type);
+                        // dispatch("fetchAllOf", record.type);
                         commit("set", { data: record, model: _this._schema.singularize(record.type) });
                         //TODO: relationships 
                     });
@@ -131,28 +135,49 @@ var VuexStore = function (_Store) {
                 //TODO: RelatedRecords update and delete
             };
             _this.mutations = {
-                set: function (state, _ref9) {
+                remove: function (state, _ref9) {
                     var data = _ref9.data,
                         model = _ref9.model;
 
+                    if (model.lastIndexOf('s') !== model.length - 1) {
+                        var index = state[model + 's'].findIndex(function (record) {
+                            return record.id == data.id;
+                        });
+                        state[model + 's'].splice(index, 1);
+                    } else {
+                        var _index = state[model + 's'].findIndex(function (record) {
+                            return record.id == data.id;
+                        });
+                        state[model + 's'].splice(_index, 1);
+                    }
+                },
+                set: function (state, _ref10) {
+                    var data = _ref10.data,
+                        model = _ref10.model;
+
                     state[model] = data;
                     if (model.lastIndexOf('s') !== model.length - 1) {
+                        var setted = false;
                         state[_this.schema.pluralize(model)].forEach(function (item) {
                             if (item.id === data.id) {
                                 item.attributes = data.attributes;
                                 item.relationships = data.relationships;
                                 item.keys = data.keys;
+                                setted = true;
                             }
                         });
+                        if (!setted) {
+                            state[_this.schema.pluralize(model)].push(data);
+                        }
                     } else {
                         state[model] = [];
                         state[model] = data;
                         state[model].splice(data.length);
                     }
                 },
-                updateField: function (state, _ref10) {
-                    var path = _ref10.path,
-                        value = _ref10.value;
+                updateField: function (state, _ref11) {
+                    var path = _ref11.path,
+                        value = _ref11.value;
 
                     //set in field
                     path.split(/[.[\]]+/).reduce(function (prev, key, index, array) {
