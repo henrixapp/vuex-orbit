@@ -49,17 +49,13 @@ var VuexStore = function (_Store) {
             };
             _this.actions = {
                 //TODO: Add fetch settings like json api
-                create: function (_ref, record) {
-                    var commit = _ref.commit,
-                        dispatch = _ref.dispatch;
+                create: async function (_ref, record) {
+                    var commit = _ref.commit;
 
-                    _this.update(function (t) {
+                    var data = await _this.update(function (t) {
                         return t.addRecord(record);
-                    }).then(function (data) {
-                        // dispatch("fetchAllOf", record.type);
-                        commit("set", { data: record, model: record.type });
-                        //TODO: relationships 
                     });
+                    commit("set", { data: record, model: record.type });
                 },
                 /**
                  * @argument model: The model as singularized name
@@ -141,6 +137,7 @@ var VuexStore = function (_Store) {
                     var data = _ref9.data,
                         model = _ref9.model;
 
+                    //TODO: singularize
                     if (model.lastIndexOf('s') !== model.length - 1) {
                         var index = state[model + 's'].findIndex(function (record) {
                             return record.id == data.id;
@@ -158,7 +155,7 @@ var VuexStore = function (_Store) {
                         model = _ref10.model;
 
                     state[model] = data;
-                    if (model.endsWith("Collection")) {
+                    if (!model.endsWith("Collection")) {
                         //update also in Collection
                         var setted = false;
                         state[model + 'Collection'].forEach(function (item) {

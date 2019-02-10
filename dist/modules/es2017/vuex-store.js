@@ -29,12 +29,9 @@ export default class VuexStore extends Store {
             };
             this.actions = {
                 //TODO: Add fetch settings like json api
-                create: ({ commit, dispatch }, record) => {
-                    this.update(t => t.addRecord(record)).then(data => {
-                        // dispatch("fetchAllOf", record.type);
-                        commit("set", { data: record, model: record.type });
-                        //TODO: relationships 
-                    });
+                create: async ({ commit }, record) => {
+                    let data = await this.update(t => t.addRecord(record));
+                    commit("set", { data: record, model: record.type });
                 },
                 /**
                  * @argument model: The model as singularized name
@@ -82,6 +79,7 @@ export default class VuexStore extends Store {
             };
             this.mutations = {
                 remove: (state, { data, model }) => {
+                    //TODO: singularize
                     if (model.lastIndexOf('s') !== model.length - 1) {
                         let index = state[model + 's'].findIndex(record => record.id == data.id);
                         state[model + 's'].splice(index, 1);
@@ -92,7 +90,7 @@ export default class VuexStore extends Store {
                 },
                 set: (state, { data, model }) => {
                     state[model] = data;
-                    if (model.endsWith("Collection")) {
+                    if (!model.endsWith("Collection")) {
                         //update also in Collection
                         let setted = false;
                         state[`${model}Collection`].forEach(item => {
