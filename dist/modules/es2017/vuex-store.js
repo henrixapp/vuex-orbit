@@ -56,7 +56,7 @@ export default class VuexStore extends Store {
                     this.query(q => q.findRecord({ type: model, id })).then(data => commit('set', { data, model: this._schema.singularize(model) }));
                 },
                 update: ({ commit }, data) => {
-                    this.update(t => t.replaceRecord(data)).then(() => commit('set', { data, model: data.type }));
+                    this.update(t => t.updateRecord(data)).then(() => commit('set', { data, model: data.type }));
                 },
                 delete: ({ commit, dispatch }, data) => {
                     this.update(t => t.removeRecord(data)).then(() => {

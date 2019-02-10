@@ -104,7 +104,7 @@ var VuexStore = function (_Store) {
                     var commit = _ref7.commit;
 
                     _this.update(function (t) {
-                        return t.replaceRecord(data);
+                        return t.updateRecord(data);
                     }).then(function () {
                         return commit('set', { data: data, model: data.type });
                     });
