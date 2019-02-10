@@ -170,7 +170,7 @@ var VuexStore = function (_Store) {
                             }
                         });
                         if (!setted) {
-                            state[_this.schema.pluralize(model)].push(data);
+                            state[model + 'Collection'].push(data);
                         }
                     } else {
                         //splice data in oder to achieve updates

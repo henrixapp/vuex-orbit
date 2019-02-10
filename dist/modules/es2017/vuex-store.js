@@ -104,7 +104,7 @@ export default class VuexStore extends Store {
                             }
                         });
                         if (!setted) {
-                            state[this.schema.pluralize(model)].push(data);
+                            state[`${model}Collection`].push(data);
                         }
                     } else {
                         //splice data in oder to achieve updates
