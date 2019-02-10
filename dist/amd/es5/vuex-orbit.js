@@ -28,8 +28,10 @@ var VuexStore = function (_Store) {
                 var model = settings.schema.getModel(type);
                 _this.state = _this.state || {};
                 //add to state
-                _this.state[_this._schema.singularize(type)] = null;
-                _this.state[_this._schema.pluralize(type)] = [];
+                //singularized
+                _this.state[type] = null;
+                //and a collection
+                _this.state[type + 'Collection'] = [];
             });
             //map fields
             _this.getters = {
@@ -55,7 +57,7 @@ var VuexStore = function (_Store) {
                         return t.addRecord(record);
                     }).then(function (data) {
                         // dispatch("fetchAllOf", record.type);
-                        commit("set", { data: record, model: _this._schema.singularize(record.type) });
+                        commit("set", { data: record, model: record.type });
                         //TODO: relationships 
                     });
                 },
@@ -68,7 +70,7 @@ var VuexStore = function (_Store) {
                     _this.query(function (q) {
                         return q.findRecords(model);
                     }).then(function (data) {
-                        commit('set', { data: data, model: _this._schema.pluralize(model) });
+                        commit('set', { data: data, model: model + 'Collection' });
                     });
                 },
                 fetchAllRelatedOf: function (_ref3, query) {
@@ -77,7 +79,7 @@ var VuexStore = function (_Store) {
                     _this.query(function (q) {
                         return q.findRelatedRecords(query.data, query.relationship);
                     }).then(function (data) {
-                        commit('set', { data: data, model: query.relationship });
+                        commit('set', { data: data, model: query.relationship }); //mind that this is the pluralized version
                     });
                 },
                 fetchRelatedOf: function (_ref4, query) {
@@ -86,7 +88,7 @@ var VuexStore = function (_Store) {
                     _this.query(function (q) {
                         return q.findRelatedRecord(query.data, query.relationship);
                     }).then(function (data) {
-                        commit('set', { data: data, model: query.relationship });
+                        commit('set', { data: data, model: query.relationship }); //singularized version
                     });
                 },
                 fetchOne: function (_ref5, _ref6) {
@@ -97,7 +99,7 @@ var VuexStore = function (_Store) {
                     _this.query(function (q) {
                         return q.findRecord({ type: model, id: id });
                     }).then(function (data) {
-                        return commit('set', { data: data, model: _this._schema.singularize(model) });
+                        return commit('set', { data: data, model: model });
                     });
                 },
                 update: function (_ref7, data) {
@@ -156,9 +158,10 @@ var VuexStore = function (_Store) {
                         model = _ref10.model;
 
                     state[model] = data;
-                    if (model.lastIndexOf('s') !== model.length - 1) {
+                    if (model.endsWith("Collection")) {
+                        //update also in Collection
                         var setted = false;
-                        state[_this.schema.pluralize(model)].forEach(function (item) {
+                        state[model + 'Collection'].forEach(function (item) {
                             if (item.id === data.id) {
                                 item.attributes = data.attributes;
                                 item.relationships = data.relationships;
@@ -170,6 +173,7 @@ var VuexStore = function (_Store) {
                             state[_this.schema.pluralize(model)].push(data);
                         }
                     } else {
+                        //splice data in oder to achieve updates
                         state[model] = [];
                         state[model] = data;
                         state[model].splice(data.length);

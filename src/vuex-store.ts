@@ -19,8 +19,10 @@ export default class VuexStore<S, R> extends Store implements Module<S, R> {
                 let model = settings.schema.getModel(type);
                 this.state = this.state || {} as S;
                 //add to state
-                this.state[this._schema.singularize(type)] = null;
-                this.state[this._schema.pluralize(type)] = [];
+                //singularized
+                this.state[type] = null;
+                //and a collection
+                this.state[`${type}Collection`] = [];
             });
             //map fields
             this.getters = {
@@ -39,7 +41,7 @@ export default class VuexStore<S, R> extends Store implements Module<S, R> {
                 create: ({ commit, dispatch }, record: Record) => {
                     this.update((t) => t.addRecord(record)).then((data) => {
                        // dispatch("fetchAllOf", record.type);
-                        commit("set", { data: record, model: this._schema.singularize(record.type) });
+                        commit("set", { data: record, model: record.type });
                         //TODO: relationships 
                     });
                 },
@@ -48,21 +50,21 @@ export default class VuexStore<S, R> extends Store implements Module<S, R> {
                  */
                 fetchAllOf: ({ commit }, model: string) => {
                     this.query(q => q.findRecords(model)).then((data) => {
-                        commit('set', { data, model: this._schema.pluralize(model) })
+                        commit('set', { data, model: `${model}Collection` })
                     })
                 },
                 fetchAllRelatedOf: ({ commit }, query: { data: RecordIdentity, relationship: string }) => {
                     this.query(q => q.findRelatedRecords(query.data, query.relationship)).then((data) => {
-                        commit('set', { data, model: query.relationship })
+                        commit('set', { data, model: query.relationship })//mind that this is the pluralized version
                     })
                 },
                 fetchRelatedOf: ({ commit }, query: { data: RecordIdentity, relationship: string }) => {
                     this.query(q => q.findRelatedRecord(query.data, query.relationship)).then((data) => {
-                        commit('set', { data, model: query.relationship })
+                        commit('set', { data, model: query.relationship })//singularized version
                     })
                 },
                 fetchOne: ({ commit }, { model, id }) => {
-                    this.query(q => q.findRecord({ type: model, id })).then((data) => commit('set', { data, model: this._schema.singularize(model) }))
+                    this.query(q => q.findRecord({ type: model, id })).then((data) => commit('set', { data, model: model }))
                 },
                 update: ({ commit }, data: Record) => {
                     this.update((t) => t.updateRecord(data)).then(() =>
@@ -100,9 +102,10 @@ export default class VuexStore<S, R> extends Store implements Module<S, R> {
                 },
                 set: (state, { data, model }) => {
                     state[model] = data;
-                    if (model.lastIndexOf('s') !== model.length - 1) {
+                    if (model.endsWith("Collection")) {
+                        //update also in Collection
                         let setted = false
-                        state[this.schema.pluralize(model)].forEach((item: Record) => {
+                        state[`${model}Collection`].forEach((item: Record) => {
                             if (item.id === data.id) {
                                 item.attributes = data.attributes;
                                 item.relationships = data.relationships;
@@ -114,6 +117,7 @@ export default class VuexStore<S, R> extends Store implements Module<S, R> {
                             state[this.schema.pluralize(model)].push(data)
                         }
                     } else {
+                        //splice data in oder to achieve updates
                         state[model] = [];
                         state[model] = data;
                         state[model].splice(data.length)
