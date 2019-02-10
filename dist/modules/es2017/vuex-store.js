@@ -10,8 +10,10 @@ export default class VuexStore extends Store {
                 let model = settings.schema.getModel(type);
                 this.state = this.state || {};
                 //add to state
-                this.state[this._schema.singularize(type)] = null;
-                this.state[this._schema.pluralize(type)] = [];
+                //singularized
+                this.state[type] = null;
+                //and a collection
+                this.state[`${type}Collection`] = [];
             });
             //map fields
             this.getters = {
@@ -30,7 +32,7 @@ export default class VuexStore extends Store {
                 create: ({ commit, dispatch }, record) => {
                     this.update(t => t.addRecord(record)).then(data => {
                         // dispatch("fetchAllOf", record.type);
-                        commit("set", { data: record, model: this._schema.singularize(record.type) });
+                        commit("set", { data: record, model: record.type });
                         //TODO: relationships 
                     });
                 },
@@ -39,21 +41,21 @@ export default class VuexStore extends Store {
                  */
                 fetchAllOf: ({ commit }, model) => {
                     this.query(q => q.findRecords(model)).then(data => {
-                        commit('set', { data, model: this._schema.pluralize(model) });
+                        commit('set', { data, model: `${model}Collection` });
                     });
                 },
                 fetchAllRelatedOf: ({ commit }, query) => {
                     this.query(q => q.findRelatedRecords(query.data, query.relationship)).then(data => {
-                        commit('set', { data, model: query.relationship });
+                        commit('set', { data, model: query.relationship }); //mind that this is the pluralized version
                     });
                 },
                 fetchRelatedOf: ({ commit }, query) => {
                     this.query(q => q.findRelatedRecord(query.data, query.relationship)).then(data => {
-                        commit('set', { data, model: query.relationship });
+                        commit('set', { data, model: query.relationship }); //singularized version
                     });
                 },
                 fetchOne: ({ commit }, { model, id }) => {
-                    this.query(q => q.findRecord({ type: model, id })).then(data => commit('set', { data, model: this._schema.singularize(model) }));
+                    this.query(q => q.findRecord({ type: model, id })).then(data => commit('set', { data, model: model }));
                 },
                 update: ({ commit }, data) => {
                     this.update(t => t.updateRecord(data)).then(() => commit('set', { data, model: data.type }));
@@ -90,9 +92,10 @@ export default class VuexStore extends Store {
                 },
                 set: (state, { data, model }) => {
                     state[model] = data;
-                    if (model.lastIndexOf('s') !== model.length - 1) {
+                    if (model.endsWith("Collection")) {
+                        //update also in Collection
                         let setted = false;
-                        state[this.schema.pluralize(model)].forEach(item => {
+                        state[`${model}Collection`].forEach(item => {
                             if (item.id === data.id) {
                                 item.attributes = data.attributes;
                                 item.relationships = data.relationships;
@@ -101,9 +104,10 @@ export default class VuexStore extends Store {
                             }
                         });
                         if (!setted) {
-                            state[this.schema.pluralize(model)].push(data);
+                            state[`${model}Collection`].push(data);
                         }
                     } else {
+                        //splice data in oder to achieve updates
                         state[model] = [];
                         state[model] = data;
                         state[model].splice(data.length);
