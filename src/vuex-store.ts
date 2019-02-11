@@ -51,7 +51,7 @@ export default class VuexStore<S, R> extends Store implements Module<S, R> {
                 },
                 fetchAllRelatedOf: ({ commit }, query: { data: RecordIdentity, relationship: string }) => {
                     this.query(q => q.findRelatedRecords(query.data, query.relationship)).then((data) => {
-                        commit('set', { data, model: query.relationship })//mind that this is the pluralized version
+                        commit('set', { data, model: `${this.schema.singularize(query.relationship)}Collection` })//mind that this is the pluralized version
                     })
                 },
                 fetchRelatedOf: ({ commit }, query: { data: RecordIdentity, relationship: string }) => {
@@ -62,16 +62,14 @@ export default class VuexStore<S, R> extends Store implements Module<S, R> {
                 fetchOne: ({ commit }, { model, id }) => {
                     this.query(q => q.findRecord({ type: model, id })).then((data) => commit('set', { data, model: model }))
                 },
-                update: ({ commit }, data: Record) => {
-                    this.update((t) => t.updateRecord(data)).then(() =>
-                        commit('set', { data, model: data.type })
-                    )
+                update: async ({ commit }, record: Record) => {
+                    let data = await this.update((t) => t.updateRecord(record))
+                    commit('set', { data, model: data.type })
                 },
-                delete: ({ commit, dispatch }, data: Record) => {
-                    this.update((t) => t.removeRecord(data)).then(() => {
-                        //update
-                        dispatch("fetchAllOf", data.type);
-                    })
+                delete: async ({ commit,  dispatch }, data: Record) => {
+                    await this.update((t) => t.removeRecord(data))
+                    await dispatch("fetchAllOf", data.type)
+                    commit('set',{data: null,model:data.type})
                 },
                 updating:(store,options:{transformOrOperations:TransformOrOperations,thenable:Function})=>{
                     this.update(options.transformOrOperations).then((data)=>{
@@ -87,18 +85,11 @@ export default class VuexStore<S, R> extends Store implements Module<S, R> {
                 //TODO: RelatedRecords update and delete
             }
             this.mutations = {
-                remove: (state,{ data, model}) => {
-                    //TODO: singularize
-                    if (model.lastIndexOf('s') !== model.length - 1) {
-                        let index= state[model+'s'].findIndex((record:Record) => record.id ==data.id)
-                        state[model+'s'].splice(index,1)
-                    } else {
-                        let index= state[model+'s'].findIndex((record:Record) => record.id ==data.id)
-                        state[model+'s'].splice(index,1)
-                    }
-                },
                 set: (state, { data, model }) => {
                     state[model] = data;
+                    if(data===null){ 
+                        return;
+                    }
                     if (!model.endsWith("Collection")) {
                         //update also in Collection
                         let setted = false

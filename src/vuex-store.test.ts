@@ -2,6 +2,7 @@ import { Schema } from '@orbit/data'
 import VuexStore from './vuex-store'
 import { shallowMount, createLocalVue } from '@vue/test-utils'
 import Vuex from "vuex"
+import { clone } from '@orbit/utils';
 const localVue = createLocalVue()
 localVue.use(Vuex)
 // @ts-ignore
@@ -63,5 +64,32 @@ describe("simple example", () => {
             expect(store.getters.getField('pet.attributes.name')).toBe("Garfield")
             done()
         })
+    })
+    test("updating works",async (done) => {
+        await store.dispatch('create',{
+            type:'pet',
+            attributes:{
+                name:'Garfield'
+            }
+        })
+        let garfield = clone(store.getters.getField('pet'))
+        garfield.attributes.name = "Lassie"
+        await store.dispatch('update',garfield)
+        expect(store.getters.getField('petCollection').length).toBe(1)
+        expect(store.getters.getField('pet.attributes.name')).toBe("Lassie")
+        done()
+    })
+    test("deleting works",async (done) => {
+        await store.dispatch('create',{
+            type:'pet',
+            attributes:{
+                name:'Garfield'
+            }
+        })
+        let garfield = clone(store.getters.getField('pet'))
+        await store.dispatch('delete',garfield)
+        expect(store.getters.getField('petCollection').length).toBe(0)
+        expect(store.getters.getField('pet')).toBeNull()
+        done()
     })
 })
