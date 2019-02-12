@@ -49,29 +49,24 @@ var VuexStore = function (_Store) {
             };
             _this.actions = {
                 //TODO: Add fetch settings like json api
-                create: function (_ref, record) {
-                    var commit = _ref.commit,
-                        dispatch = _ref.dispatch;
+                create: async function (_ref, record) {
+                    var commit = _ref.commit;
 
-                    _this.update(function (t) {
+                    var data = await _this.update(function (t) {
                         return t.addRecord(record);
-                    }).then(function (data) {
-                        // dispatch("fetchAllOf", record.type);
-                        commit("set", { data: record, model: record.type });
-                        //TODO: relationships 
                     });
+                    commit("set", { data: data, model: data.type });
                 },
                 /**
                  * @argument model: The model as singularized name
                  */
-                fetchAllOf: function (_ref2, model) {
+                fetchAllOf: async function (_ref2, model) {
                     var commit = _ref2.commit;
 
-                    _this.query(function (q) {
+                    var data = await _this.query(function (q) {
                         return q.findRecords(model);
-                    }).then(function (data) {
-                        commit('set', { data: data, model: model + 'Collection' });
                     });
+                    commit('set', { data: data, model: model + 'Collection' });
                 },
                 fetchAllRelatedOf: function (_ref3, query) {
                     var commit = _ref3.commit;
@@ -79,7 +74,7 @@ var VuexStore = function (_Store) {
                     _this.query(function (q) {
                         return q.findRelatedRecords(query.data, query.relationship);
                     }).then(function (data) {
-                        commit('set', { data: data, model: query.relationship }); //mind that this is the pluralized version
+                        commit('set', { data: data, model: _this.schema.singularize(query.relationship) + 'Collection' }); //mind that this is the pluralized version
                     });
                 },
                 fetchRelatedOf: function (_ref4, query) {
@@ -102,25 +97,23 @@ var VuexStore = function (_Store) {
                         return commit('set', { data: data, model: model });
                     });
                 },
-                update: function (_ref7, data) {
+                update: async function (_ref7, record) {
                     var commit = _ref7.commit;
 
-                    _this.update(function (t) {
-                        return t.updateRecord(data);
-                    }).then(function () {
-                        return commit('set', { data: data, model: data.type });
+                    var data = await _this.update(function (t) {
+                        return t.updateRecord(record);
                     });
+                    commit('set', { data: data, model: data.type });
                 },
-                delete: function (_ref8, data) {
+                delete: async function (_ref8, data) {
                     var commit = _ref8.commit,
                         dispatch = _ref8.dispatch;
 
-                    _this.update(function (t) {
+                    await _this.update(function (t) {
                         return t.removeRecord(data);
-                    }).then(function () {
-                        //update
-                        dispatch("fetchAllOf", data.type);
                     });
+                    await dispatch("fetchAllOf", data.type);
+                    commit('set', { data: null, model: data.type });
                 },
                 updating: function (store, options) {
                     _this.update(options.transformOrOperations).then(function (data) {
@@ -137,28 +130,15 @@ var VuexStore = function (_Store) {
                 //TODO: RelatedRecords update and delete
             };
             _this.mutations = {
-                remove: function (state, _ref9) {
+                set: function (state, _ref9) {
                     var data = _ref9.data,
                         model = _ref9.model;
 
-                    if (model.lastIndexOf('s') !== model.length - 1) {
-                        var index = state[model + 's'].findIndex(function (record) {
-                            return record.id == data.id;
-                        });
-                        state[model + 's'].splice(index, 1);
-                    } else {
-                        var _index = state[model + 's'].findIndex(function (record) {
-                            return record.id == data.id;
-                        });
-                        state[model + 's'].splice(_index, 1);
-                    }
-                },
-                set: function (state, _ref10) {
-                    var data = _ref10.data,
-                        model = _ref10.model;
-
                     state[model] = data;
-                    if (model.endsWith("Collection")) {
+                    if (data === null) {
+                        return;
+                    }
+                    if (!model.endsWith("Collection")) {
                         //update also in Collection
                         var setted = false;
                         state[model + 'Collection'].forEach(function (item) {
@@ -179,9 +159,9 @@ var VuexStore = function (_Store) {
                         state[model].splice(data.length);
                     }
                 },
-                updateField: function (state, _ref11) {
-                    var path = _ref11.path,
-                        value = _ref11.value;
+                updateField: function (state, _ref10) {
+                    var path = _ref10.path,
+                        value = _ref10.value;
 
                     //set in field
                     path.split(/[.[\]]+/).reduce(function (prev, key, index, array) {

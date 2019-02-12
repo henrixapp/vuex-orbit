@@ -10,14 +10,14 @@ export default class VuexStore<S, R> extends Store implements Module<S, R> {
     actions: ActionTree<S, R>;
     mutations: MutationTree<S>;
     modules: ModuleTree<R>;
-    constructor(settings: StoreSettings = {}) {
+    constructor(settings: StoreSettings) {
         super(settings)
         if (settings.schema) {
             //generate vuex store
             this.state = this.state || {} as S;
             Object.keys(this._schema.models).forEach(type => {
                 let model = settings.schema.getModel(type);
-                this.state = this.state || {} as S;
+                this.state = this.state;
                 //add to state
                 //singularized
                 this.state[type] = null;
@@ -38,71 +38,56 @@ export default class VuexStore<S, R> extends Store implements Module<S, R> {
             };
             this.actions = {
                 //TODO: Add fetch settings like json api
-                create: ({ commit, dispatch }, record: Record) => {
-                    this.update((t) => t.addRecord(record)).then((data) => {
-                       // dispatch("fetchAllOf", record.type);
-                        commit("set", { data: record, model: record.type });
-                        //TODO: relationships 
-                    });
+                 create: async ({ commit }, record: Record) => {
+                    let  data = await this.update((t) => t.addRecord(record))
+                    commit("set", { data, model: data.type })
                 },
                 /**
                  * @argument model: The model as singularized name
                  */
-                fetchAllOf: ({ commit }, model: string) => {
-                    this.query(q => q.findRecords(model)).then((data) => {
-                        commit('set', { data, model: `${model}Collection` })
-                    })
+                fetchAllOf: async ({ commit }, model: string) => {
+                    let data = await this.query(q => q.findRecords(model))
+                    commit('set', { data, model: `${model}Collection` })
                 },
-                fetchAllRelatedOf: ({ commit }, query: { data: RecordIdentity, relationship: string }) => {
-                    this.query(q => q.findRelatedRecords(query.data, query.relationship)).then((data) => {
-                        commit('set', { data, model: query.relationship })//mind that this is the pluralized version
-                    })
+                fetchAllRelatedOf: async ({ commit }, query: { data: RecordIdentity, relationship: string }) => {
+                    let data = await this.query(q => q.findRelatedRecords(query.data, query.relationship))
+                    commit('set', { data, model: `${this.schema.singularize(query.relationship)}Collection` })//mind that this is the pluralized version
                 },
-                fetchRelatedOf: ({ commit }, query: { data: RecordIdentity, relationship: string }) => {
-                    this.query(q => q.findRelatedRecord(query.data, query.relationship)).then((data) => {
-                        commit('set', { data, model: query.relationship })//singularized version
-                    })
+                fetchRelatedOf: async ({ commit }, query: { data: RecordIdentity, relationship: string }) => {
+                    let data = await this.query(q => q.findRelatedRecord(query.data, query.relationship))
+                    commit('set', { data, model: query.relationship })//singularized version
                 },
-                fetchOne: ({ commit }, { model, id }) => {
-                    this.query(q => q.findRecord({ type: model, id })).then((data) => commit('set', { data, model: model }))
+                fetchOne: async ({ commit }, { model, id }) => {
+                    let data = await this.query(q => q.findRecord({ type: model, id }))
+                    commit('set', { data, model: model })
                 },
-                update: ({ commit }, data: Record) => {
-                    this.update((t) => t.updateRecord(data)).then(() =>
-                        commit('set', { data, model: data.type })
-                    )
+                update: async ({ commit }, record: Record) => {
+                    let data = await this.update((t) => t.updateRecord(record))
+                    commit('set', { data, model: data.type })
                 },
-                delete: ({ commit, dispatch }, data: Record) => {
-                    this.update((t) => t.removeRecord(data)).then(() => {
-                        //update
-                        dispatch("fetchAllOf", data.type);
-                    })
+                delete: async ({ commit,  dispatch }, data: Record) => {
+                    await this.update((t) => t.removeRecord(data))
+                    await dispatch("fetchAllOf", data.type)
+                    commit('set',{data: null,model:data.type})
                 },
-                updating:(store,options:{transformOrOperations:TransformOrOperations,thenable:Function})=>{
-                    this.update(options.transformOrOperations).then((data)=>{
-                        options.thenable(store,data);
-                    })
+                updating:async (store,options:{transformOrOperations:TransformOrOperations,thenable:Function})=>{
+                    let data = await this.update(options.transformOrOperations)
+                    options.thenable(store,data)
                 },
-                querying: (store, options:{queryOrExpression: QueryBuilderFunc,thenable:Function}) => {
-                    this.query(q=>{
-                        return options.queryOrExpression(q)}).then((data) => {
-                        options.thenable(store,data);
-                    })
+                querying: async (store, options:{queryOrExpression: QueryBuilderFunc,thenable:Function}) => {
+                    let data = await this.query(q=>{
+                        return options.queryOrExpression(q)})
+                    options.thenable(store,data)
                 }
                 //TODO: RelatedRecords update and delete
             }
             this.mutations = {
-                remove: (state,{ data, model}) => {
-                    if (model.lastIndexOf('s') !== model.length - 1) {
-                        let index= state[model+'s'].findIndex((record:Record) => record.id ==data.id)
-                        state[model+'s'].splice(index,1)
-                    } else {
-                        let index= state[model+'s'].findIndex((record:Record) => record.id ==data.id)
-                        state[model+'s'].splice(index,1)
-                    }
-                },
                 set: (state, { data, model }) => {
                     state[model] = data;
-                    if (model.endsWith("Collection")) {
+                    if(data===null){ 
+                        return;
+                    }
+                    if (!model.endsWith("Collection")) {
                         //update also in Collection
                         let setted = false
                         state[`${model}Collection`].forEach((item: Record) => {

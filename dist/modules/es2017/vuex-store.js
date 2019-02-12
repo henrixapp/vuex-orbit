@@ -29,24 +29,20 @@ export default class VuexStore extends Store {
             };
             this.actions = {
                 //TODO: Add fetch settings like json api
-                create: ({ commit, dispatch }, record) => {
-                    this.update(t => t.addRecord(record)).then(data => {
-                        // dispatch("fetchAllOf", record.type);
-                        commit("set", { data: record, model: record.type });
-                        //TODO: relationships 
-                    });
+                create: async ({ commit }, record) => {
+                    let data = await this.update(t => t.addRecord(record));
+                    commit("set", { data, model: data.type });
                 },
                 /**
                  * @argument model: The model as singularized name
                  */
-                fetchAllOf: ({ commit }, model) => {
-                    this.query(q => q.findRecords(model)).then(data => {
-                        commit('set', { data, model: `${model}Collection` });
-                    });
+                fetchAllOf: async ({ commit }, model) => {
+                    let data = await this.query(q => q.findRecords(model));
+                    commit('set', { data, model: `${model}Collection` });
                 },
                 fetchAllRelatedOf: ({ commit }, query) => {
                     this.query(q => q.findRelatedRecords(query.data, query.relationship)).then(data => {
-                        commit('set', { data, model: query.relationship }); //mind that this is the pluralized version
+                        commit('set', { data, model: `${this.schema.singularize(query.relationship)}Collection` }); //mind that this is the pluralized version
                     });
                 },
                 fetchRelatedOf: ({ commit }, query) => {
@@ -57,14 +53,14 @@ export default class VuexStore extends Store {
                 fetchOne: ({ commit }, { model, id }) => {
                     this.query(q => q.findRecord({ type: model, id })).then(data => commit('set', { data, model: model }));
                 },
-                update: ({ commit }, data) => {
-                    this.update(t => t.updateRecord(data)).then(() => commit('set', { data, model: data.type }));
+                update: async ({ commit }, record) => {
+                    let data = await this.update(t => t.updateRecord(record));
+                    commit('set', { data, model: data.type });
                 },
-                delete: ({ commit, dispatch }, data) => {
-                    this.update(t => t.removeRecord(data)).then(() => {
-                        //update
-                        dispatch("fetchAllOf", data.type);
-                    });
+                delete: async ({ commit, dispatch }, data) => {
+                    await this.update(t => t.removeRecord(data));
+                    await dispatch("fetchAllOf", data.type);
+                    commit('set', { data: null, model: data.type });
                 },
                 updating: (store, options) => {
                     this.update(options.transformOrOperations).then(data => {
@@ -81,18 +77,12 @@ export default class VuexStore extends Store {
                 //TODO: RelatedRecords update and delete
             };
             this.mutations = {
-                remove: (state, { data, model }) => {
-                    if (model.lastIndexOf('s') !== model.length - 1) {
-                        let index = state[model + 's'].findIndex(record => record.id == data.id);
-                        state[model + 's'].splice(index, 1);
-                    } else {
-                        let index = state[model + 's'].findIndex(record => record.id == data.id);
-                        state[model + 's'].splice(index, 1);
-                    }
-                },
                 set: (state, { data, model }) => {
                     state[model] = data;
-                    if (model.endsWith("Collection")) {
+                    if (data === null) {
+                        return;
+                    }
+                    if (!model.endsWith("Collection")) {
                         //update also in Collection
                         let setted = false;
                         state[`${model}Collection`].forEach(item => {

@@ -9,7 +9,7 @@
     "build": "rm -rf dist && BROCCOLI_ENV=dist broccoli build dist",
     "build:tests": "rm -rf tests && BROCCOLI_ENV=tests broccoli build tests",
     "prepare": "npm run build",
-    "test": "testem ci"
+    "test": "jest"
   },
   "repository": {
     "type": "git",
@@ -38,7 +38,44 @@
   },
   "devDependencies": {
     "@glimmer/build": "^0.9.1",
+    "@types/jest": "^24.0.0",
+    "@vue/test-utils": "^1.0.0-beta.29",
+    "babel-jest": "^24.1.0",
+    "jest": "^24.1.0",
     "sinon": "^1.17.7",
+    "ts-jest": "^23.10.5",
+    "vue-jest": "^3.0.3",
+    "vue-template-compiler": "^2.6.4",
     "whatwg-fetch": "^2.0.3"
+  },
+  "jest": {
+    "collectCoverage": true,
+    "collectCoverageFrom": [
+      "**/*.{js,vue,ts}",
+      "!**/node_modules/**"
+    ],
+    "coverageReporters": [
+      "html",
+      "text-summary"
+    ],
+    "roots": [
+      "<rootDir>/src"
+    ],
+    "moduleFileExtensions": [
+      "js",
+      "json",
+      "vue",
+      "ts",
+      "tsx"
+    ],
+    "transform": {
+      ".*\\.(vue)$": "<rootDir>/node_modules/vue-jest",
+      "^.+\\.tsx?$": "<rootDir>/node_modules/ts-jest",
+      "^.+\\.js$": "<rootDir>/node_modules/babel-jest"
+    },
+    "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.tsx?$",
+    "moduleNameMapper": {
+      "^@/(.*)$": "<rootDir>/src/$1"
+    }
   }
 }
