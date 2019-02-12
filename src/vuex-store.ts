@@ -70,16 +70,14 @@ export default class VuexStore<S, R> extends Store implements Module<S, R> {
                     await dispatch("fetchAllOf", data.type)
                     commit('set',{data: null,model:data.type})
                 },
-                updating:(store,options:{transformOrOperations:TransformOrOperations,thenable:Function})=>{
-                    this.update(options.transformOrOperations).then((data)=>{
-                        options.thenable(store,data);
-                    })
+                updating:async (store,options:{transformOrOperations:TransformOrOperations,thenable:Function})=>{
+                    let data = await this.update(options.transformOrOperations)
+                    options.thenable(store,data)
                 },
-                querying: (store, options:{queryOrExpression: QueryBuilderFunc,thenable:Function}) => {
-                    this.query(q=>{
-                        return options.queryOrExpression(q)}).then((data) => {
-                        options.thenable(store,data);
-                    })
+                querying: async (store, options:{queryOrExpression: QueryBuilderFunc,thenable:Function}) => {
+                    let data = await this.query(q=>{
+                        return options.queryOrExpression(q)})
+                    options.thenable(store,data)
                 }
                 //TODO: RelatedRecords update and delete
             }
