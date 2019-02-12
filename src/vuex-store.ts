@@ -10,14 +10,14 @@ export default class VuexStore<S, R> extends Store implements Module<S, R> {
     actions: ActionTree<S, R>;
     mutations: MutationTree<S>;
     modules: ModuleTree<R>;
-    constructor(settings: StoreSettings = {}) {
+    constructor(settings: StoreSettings) {
         super(settings)
         if (settings.schema) {
             //generate vuex store
             this.state = this.state || {} as S;
             Object.keys(this._schema.models).forEach(type => {
                 let model = settings.schema.getModel(type);
-                this.state = this.state || {} as S;
+                this.state = this.state;
                 //add to state
                 //singularized
                 this.state[type] = null;
