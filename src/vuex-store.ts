@@ -49,18 +49,17 @@ export default class VuexStore<S, R> extends Store implements Module<S, R> {
                     let data = await this.query(q => q.findRecords(model))
                     commit('set', { data, model: `${model}Collection` })
                 },
-                fetchAllRelatedOf: ({ commit }, query: { data: RecordIdentity, relationship: string }) => {
-                    this.query(q => q.findRelatedRecords(query.data, query.relationship)).then((data) => {
-                        commit('set', { data, model: `${this.schema.singularize(query.relationship)}Collection` })//mind that this is the pluralized version
-                    })
+                fetchAllRelatedOf: async ({ commit }, query: { data: RecordIdentity, relationship: string }) => {
+                    let data = await this.query(q => q.findRelatedRecords(query.data, query.relationship))
+                    commit('set', { data, model: `${this.schema.singularize(query.relationship)}Collection` })//mind that this is the pluralized version
                 },
-                fetchRelatedOf: ({ commit }, query: { data: RecordIdentity, relationship: string }) => {
-                    this.query(q => q.findRelatedRecord(query.data, query.relationship)).then((data) => {
-                        commit('set', { data, model: query.relationship })//singularized version
-                    })
+                fetchRelatedOf: async ({ commit }, query: { data: RecordIdentity, relationship: string }) => {
+                    let data = await this.query(q => q.findRelatedRecord(query.data, query.relationship))
+                    commit('set', { data, model: query.relationship })//singularized version
                 },
-                fetchOne: ({ commit }, { model, id }) => {
-                    this.query(q => q.findRecord({ type: model, id })).then((data) => commit('set', { data, model: model }))
+                fetchOne: async ({ commit }, { model, id }) => {
+                    let data = await this.query(q => q.findRecord({ type: model, id }))
+                    commit('set', { data, model: model })
                 },
                 update: async ({ commit }, record: Record) => {
                     let data = await this.update((t) => t.updateRecord(record))
